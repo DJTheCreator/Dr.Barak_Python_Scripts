@@ -23,6 +23,10 @@ def createMedianArray(array):
 
 
 medianYArray = createMedianArray(yArray)
+dataframe_dict = {'Strain': arrx, 'Median Stress': medianYArray}
+dataframe1 = pd.DataFrame(data=dataframe_dict)
+dataframe1.to_excel('MedianExcelFiles/test_median.xlsx')
+
 # noinspection PyTypeChecker
 plt.scatter(x=arrx, y=medianYArray, s=2)
 plt.show()
