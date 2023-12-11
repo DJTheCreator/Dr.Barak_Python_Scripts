@@ -48,14 +48,14 @@ def findSmallestArray(array):
     return smallestArray
 
 
-def createMedianArray(dataframArray, collumnName):
-    array = createArrayFromDataframes(dataframArray, collumnName)
+def createMedianArray(dataframeArray, collumnName, scaleFactor=1):
+    array = createArrayFromDataframes(dataframeArray, collumnName)
     newArray = []
     smallestArray = findSmallestArray(array)
     for i in range(len(smallestArray)):
         valueArray = []
         for sheet in array:
-            valueArray.append(sheet[i])
+            valueArray.append(sheet[i] * scaleFactor)
         newArray.append(median(valueArray))
     return newArray
 
@@ -63,26 +63,26 @@ def createMedianArray(dataframArray, collumnName):
 strainZ = createArrayFromDataframes(zCubeSheets, 'Strain')
 stressZ = createArrayFromDataframes(zCubeSheets, 'Stress')
 
-medianZCubesStress = createMedianArray(zCubeSheets, 'Stress')
+medianZCubesStress = createMedianArray(zCubeSheets, 'Stress', 1000000)
 medianZCubesStrain = []
 for value in findSmallestArray(strainZ):
-    medianZCubesStrain.append(value)
+    medianZCubesStrain.append(value * 1000000)
 
 strainY = createArrayFromDataframes(yCubeSheets, 'Strain')
 stressY = createArrayFromDataframes(yCubeSheets, 'Stress')
 
-medianYCubesStress = createMedianArray(yCubeSheets, 'Stress')
+medianYCubesStress = createMedianArray(yCubeSheets, 'Stress', 1000000)
 medianYCubesStrain = []
 for value in findSmallestArray(strainY):
-    medianYCubesStrain.append(value)
+    medianYCubesStrain.append(value * 1000000)
 
 strainX = createArrayFromDataframes(xCubeSheets, 'Strain')
 stressX = createArrayFromDataframes(xCubeSheets, 'Stress')
 
-medianXCubesStress = createMedianArray(xCubeSheets, 'Stress')
+medianXCubesStress = createMedianArray(xCubeSheets, 'Stress', 1000000)
 medianXCubesStrain = []
 for value in findSmallestArray(strainX):
-    medianXCubesStrain.append(value)
+    medianXCubesStrain.append(value * 1000000)
 
 # consolidatedStrainZ = consolidateArray(strainZ)
 # consolidatedStressZ = consolidateArray(stressZ)
@@ -123,13 +123,13 @@ YCube = mpatches.Patch(color='red', label='Y Cubes')
 xCube = mpatches.Patch(color='green', label='X Cubes')
 ax.legend(handles=[xCube, YCube, ZCube])
 
-plt.xlabel('Strain')
-plt.ylabel('Stress (N/mm\u00B2)')
+plt.xlabel('Microstrain (\u03BC\u03B5)')
+plt.ylabel('Stress (Pa)')
 # getTitle = input("Enter title (code for \u00B2 is \\u00B2): ")
 getTitle = ''
 if getTitle != '':
     plt.title(getTitle)
 else:
     plt.title('Stress vs Strain on median of each \n 3mm\u00B3 BMF Cubes (All Orientations)')
-# plt.savefig('CombinedCubesMedian')
+plt.savefig('CombinedCubesMedian')
 plt.show()
