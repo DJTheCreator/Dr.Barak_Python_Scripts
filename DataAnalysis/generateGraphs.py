@@ -43,7 +43,7 @@ xCubeSheets = createArrayFromFiles('ExcelFiles/', 'Three')
 def findSmallestArray(array):
     smallestArray = array[0]
     for i in range(len(array)):
-        if (len(array[i]) < len(smallestArray)):
+        if len(array[i]) < len(smallestArray):
             smallestArray = array[i]
     return smallestArray
 
