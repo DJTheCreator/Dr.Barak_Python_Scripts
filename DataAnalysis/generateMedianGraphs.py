@@ -2,15 +2,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import os
+import openpyxl
 from numpy import median
 
 
-def createArrayFromDataframes(dataframeArray, collumnName):
+def createArrayFromDataframes(dataframeArray, columnName):
     bigTempArray = []
     for dataframe in dataframeArray:
         tempArray = []
         for i in dataframe.iterrows():
-            tempArray.append(dataframe.loc[i[0], collumnName])
+            tempArray.append(dataframe.loc[i[0], columnName])
         bigTempArray.append(tempArray)
     return bigTempArray
 
@@ -28,33 +29,46 @@ def createArrayFromFiles(location, keyword):
     return tempArray
 
 
-zCubeSheets = createArrayFromFiles('ExcelFiles/', 'One')
+def consolidateArray(arrays):
+    consolidatedArray = []
+    for array in arrays:
+        consolidatedArray += array
+    return consolidatedArray
+
+
+zCubeSheets = createArrayFromFiles('ExcelFiles/Tension/3DP/', 'Z')
+yCubeSheets = createArrayFromFiles('ExcelFiles/Tension/3DP/', 'Y')
+xCubeSheets = createArrayFromFiles('ExcelFiles/Tension/3DP/', 'X')
+
+
 
 def findSmallestArray(array):
     smallestArray = array[0]
     for i in range(len(array)):
-        if(len(array[i]) < len(smallestArray)):
+        if len(array[i]) < len(smallestArray):
             smallestArray = array[i]
     return smallestArray
 
 
-def createMedianArray(dataframArray, collumnName):
-    array = createArrayFromDataframes(dataframArray, collumnName)
+def createMedianArray(dataframeArray, columnName, scaleFactor=1):
+    array = createArrayFromDataframes(dataframeArray, columnName)
     newArray = []
     smallestArray = findSmallestArray(array)
     for i in range(len(smallestArray)):
         valueArray = []
         for sheet in array:
-            valueArray.append(sheet[i])
+            valueArray.append(sheet[i] * scaleFactor)
         newArray.append(median(valueArray))
     return newArray
 
 
-medianZCubesStress = createMedianArray(zCubeSheets, 'Stress')
-zCubesStrainArray = []
-for i in range(len(findSmallestArray(zCubeSheets))):
-    zCubesStrainArray.append(i)
+strainZ = createArrayFromDataframes(zCubeSheets, 'Strain')
+stressZ = createArrayFromDataframes(zCubeSheets, 'Stress')
 
-# noinspection PyTypeChecker
-plt.scatter(zCubesStrainArray, medianZCubesStress, s=2, c='blue')
-plt.show()
+medianZCubesStress = createMedianArray(zCubeSheets, 'Stress', 1000000)
+medianZCubesStrain = []
+for value in findSmallestArray(strainZ):
+    medianZCubesStrain.append(value * 1000000)
+
+strainY = createArrayFromDataframes(yCubeSheets, 'Strain')
+stressY = createArrayFromDataframes(yCubeSheets, 'Stress')

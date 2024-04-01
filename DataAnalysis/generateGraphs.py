@@ -2,15 +2,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import os
+import openpyxl
 from numpy import median
 
 
-def createArrayFromDataframes(dataframeArray, collumnName):
+def createArrayFromDataframes(dataframeArray, columnName):
     bigTempArray = []
     for dataframe in dataframeArray:
         tempArray = []
         for i in dataframe.iterrows():
-            tempArray.append(dataframe.loc[i[0], collumnName])
+            tempArray.append(dataframe.loc[i[0], columnName])
         bigTempArray.append(tempArray)
     return bigTempArray
 
@@ -35,9 +36,9 @@ def consolidateArray(arrays):
     return consolidatedArray
 
 
-zCubeSheets = createArrayFromFiles('ExcelFiles/', 'One')
-yCubeSheets = createArrayFromFiles('ExcelFiles/', 'Two')
-xCubeSheets = createArrayFromFiles('ExcelFiles/', 'Three')
+zCubeSheets = createArrayFromFiles('ExcelFiles/Tension/3DP/', 'Z')
+yCubeSheets = createArrayFromFiles('ExcelFiles/Tension/3DP/', 'Y')
+xCubeSheets = createArrayFromFiles('ExcelFiles/Tension/3DP/', 'X')
 
 
 def findSmallestArray(array):
@@ -48,8 +49,8 @@ def findSmallestArray(array):
     return smallestArray
 
 
-def createMedianArray(dataframeArray, collumnName, scaleFactor=1):
-    array = createArrayFromDataframes(dataframeArray, collumnName)
+def createMedianArray(dataframeArray, columnName, scaleFactor=1):
+    array = createArrayFromDataframes(dataframeArray, columnName)
     newArray = []
     smallestArray = findSmallestArray(array)
     for i in range(len(smallestArray)):
@@ -92,10 +93,10 @@ for value in findSmallestArray(strainX):
 #
 # consolidatedStrainX = consolidateArray(strainX)
 # consolidatedStressX = consolidateArray(stressX)
-
-# noinspection PyTypeChecker
+#
+# # noinspection PyTypeChecker
 # plt.scatter(consolidatedStrainZ, consolidatedStressZ, s=2, c='blue')
-# noinspection PyTypeChecker
+# # noinspection PyTypeChecker
 # plt.scatter(consolidatedStrainY, consolidatedStressY, s=2, c='red')
 # # noinspection PyTypeChecker
 # plt.scatter(consolidatedStrainX, consolidatedStressX, s=2, c='green')
@@ -104,17 +105,17 @@ for value in findSmallestArray(strainX):
 plt.scatter(medianZCubesStrain, medianZCubesStress, s=2, c='blue')
 zCubeMedian_dict = {'Strain': medianZCubesStrain, 'Median Stress': medianZCubesStress}
 zCubeDataframe = pd.DataFrame(data=zCubeMedian_dict)
-zCubeDataframe.to_excel('MedianExcelFiles/BMF_Cube_One_Median.xlsx')
+zCubeDataframe.to_excel('MedianExcelFiles/3DP_Beam_Z_Median.xlsx')
 # noinspection PyTypeChecker
 plt.scatter(medianYCubesStrain, medianYCubesStress, s=2, c='red')
 yCubeMedian_dict = {'Strain': medianYCubesStrain, 'Median Stress': medianYCubesStress}
 yCubeDataframe = pd.DataFrame(data=yCubeMedian_dict)
-yCubeDataframe.to_excel('MedianExcelFiles/BMF_Cube_Two_Median.xlsx')
+yCubeDataframe.to_excel('MedianExcelFiles/3DP_Beam_Y_Median.xlsx')
 # noinspection PyTypeChecker
 plt.scatter(medianXCubesStrain, medianXCubesStress, s=2, c='green')
 xCubeMedian_dict = {'Strain': medianXCubesStrain, 'Median Stress': medianXCubesStress}
 xCubeDataframe = pd.DataFrame(data=xCubeMedian_dict)
-xCubeDataframe.to_excel('MedianExcelFiles/BMF_Cube_Three_Median.xlsx')
+xCubeDataframe.to_excel('MedianExcelFiles/3DP_Beam_X_Median.xlsx')
 
 ax = plt.subplot()
 
@@ -131,5 +132,5 @@ if getTitle != '':
     plt.title(getTitle)
 else:
     plt.title('Stress vs Strain on median of each \n 3mm\u00B3 BMF Cubes (All Orientations)')
-plt.savefig('CombinedCubesMedian')
+plt.savefig('CombinedBeamsMedian')
 plt.show()
