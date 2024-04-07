@@ -11,7 +11,7 @@ def createArrayFromExcel(dataframe, collumnName):
 
 selectedCols = [5, 6]
 # noinspection PyTypeChecker
-cube1Z_sheet = pd.read_excel('ExcelFiles/BMF_Cube_One1.xlsx', usecols=selectedCols, skiprows=3)
+cube1Z_sheet = pd.read_excel('BMFExcelFiles/BMF_Cube_One1.xlsx', usecols=selectedCols, skiprows=3)
 
 strainZ = createArrayFromExcel(cube1Z_sheet, 'Strain')
 stressZ = createArrayFromExcel(cube1Z_sheet, 'Stress')

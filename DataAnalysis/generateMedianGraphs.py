@@ -28,7 +28,7 @@ def createArrayFromFiles(location, keyword):
     return tempArray
 
 
-zCubeSheets = createArrayFromFiles('ExcelFiles/', 'One')
+zCubeSheets = createArrayFromFiles('BMFExcelFiles/', 'One')
 
 def findSmallestArray(array):
     smallestArray = array[0]

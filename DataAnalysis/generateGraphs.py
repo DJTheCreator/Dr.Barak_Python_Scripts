@@ -35,10 +35,16 @@ def consolidateArray(arrays):
     return consolidatedArray
 
 
-zCubeSheets = createArrayFromFiles('ExcelFiles/', 'One')
-yCubeSheets = createArrayFromFiles('ExcelFiles/', 'Two')
-xCubeSheets = createArrayFromFiles('ExcelFiles/', 'Three')
+bmf_mode = False  # Developer toggle for Formlabs cubes (False) or BMF cubes (True)
 
+if bmf_mode:
+    zCubeSheets = createArrayFromFiles('BMFExcelFiles/', 'One')
+    yCubeSheets = createArrayFromFiles('BMFExcelFiles/', 'Two')
+    xCubeSheets = createArrayFromFiles('BMFExcelFiles/', 'Three')
+else:
+    zCubeSheets = createArrayFromFiles('FormlabsExcelFiles/', 'Z')
+    yCubeSheets = createArrayFromFiles('FormlabsExcelFiles/', 'Y')
+    xCubeSheets = createArrayFromFiles('FormlabsExcelFiles/', 'X')
 
 def findSmallestArray(array):
     smallestArray = array[0]
@@ -63,7 +69,7 @@ def createMedianArray(dataframeArray, collumnName, scaleFactor=1):
 strainZ = createArrayFromDataframes(zCubeSheets, 'Strain')
 stressZ = createArrayFromDataframes(zCubeSheets, 'Stress')
 
-medianZCubesStress = createMedianArray(zCubeSheets, 'Stress', 1000000)
+medianZCubesStress = createMedianArray(zCubeSheets, 'Stress')
 medianZCubesStrain = []
 for value in findSmallestArray(strainZ):
     medianZCubesStrain.append(value * 1000000)
@@ -71,7 +77,7 @@ for value in findSmallestArray(strainZ):
 strainY = createArrayFromDataframes(yCubeSheets, 'Strain')
 stressY = createArrayFromDataframes(yCubeSheets, 'Stress')
 
-medianYCubesStress = createMedianArray(yCubeSheets, 'Stress', 1000000)
+medianYCubesStress = createMedianArray(yCubeSheets, 'Stress')
 medianYCubesStrain = []
 for value in findSmallestArray(strainY):
     medianYCubesStrain.append(value * 1000000)
@@ -79,42 +85,42 @@ for value in findSmallestArray(strainY):
 strainX = createArrayFromDataframes(xCubeSheets, 'Strain')
 stressX = createArrayFromDataframes(xCubeSheets, 'Stress')
 
-medianXCubesStress = createMedianArray(xCubeSheets, 'Stress', 1000000)
+medianXCubesStress = createMedianArray(xCubeSheets, 'Stress')
 medianXCubesStrain = []
 for value in findSmallestArray(strainX):
     medianXCubesStrain.append(value * 1000000)
 
-# consolidatedStrainZ = consolidateArray(strainZ)
-# consolidatedStressZ = consolidateArray(stressZ)
-#
-# consolidatedStrainY = consolidateArray(strainY)
-# consolidatedStressY = consolidateArray(stressY)
-#
-# consolidatedStrainX = consolidateArray(strainX)
-# consolidatedStressX = consolidateArray(stressX)
+consolidatedStrainZ = consolidateArray(strainZ)
+consolidatedStressZ = consolidateArray(stressZ)
+
+consolidatedStrainY = consolidateArray(strainY)
+consolidatedStressY = consolidateArray(stressY)
+
+consolidatedStrainX = consolidateArray(strainX)
+consolidatedStressX = consolidateArray(stressX)
 
 # noinspection PyTypeChecker
-# plt.scatter(consolidatedStrainZ, consolidatedStressZ, s=2, c='blue')
+plt.scatter(consolidatedStrainZ, consolidatedStressZ, s=2, c='blue')
 # noinspection PyTypeChecker
-# plt.scatter(consolidatedStrainY, consolidatedStressY, s=2, c='red')
+plt.scatter(consolidatedStrainY, consolidatedStressY, s=2, c='red')
+# noinspection PyTypeChecker
+plt.scatter(consolidatedStrainX, consolidatedStressX, s=2, c='green')
+
 # # noinspection PyTypeChecker
-# plt.scatter(consolidatedStrainX, consolidatedStressX, s=2, c='green')
-
-# noinspection PyTypeChecker
-plt.scatter(medianZCubesStrain, medianZCubesStress, s=2, c='blue')
-zCubeMedian_dict = {'Strain': medianZCubesStrain, 'Median Stress': medianZCubesStress}
-zCubeDataframe = pd.DataFrame(data=zCubeMedian_dict)
-zCubeDataframe.to_excel('MedianExcelFiles/BMF_Cube_One_Median.xlsx')
-# noinspection PyTypeChecker
-plt.scatter(medianYCubesStrain, medianYCubesStress, s=2, c='red')
-yCubeMedian_dict = {'Strain': medianYCubesStrain, 'Median Stress': medianYCubesStress}
-yCubeDataframe = pd.DataFrame(data=yCubeMedian_dict)
-yCubeDataframe.to_excel('MedianExcelFiles/BMF_Cube_Two_Median.xlsx')
-# noinspection PyTypeChecker
-plt.scatter(medianXCubesStrain, medianXCubesStress, s=2, c='green')
-xCubeMedian_dict = {'Strain': medianXCubesStrain, 'Median Stress': medianXCubesStress}
-xCubeDataframe = pd.DataFrame(data=xCubeMedian_dict)
-xCubeDataframe.to_excel('MedianExcelFiles/BMF_Cube_Three_Median.xlsx')
+# plt.scatter(medianZCubesStrain, medianZCubesStress, s=2, c='blue')
+# zCubeMedian_dict = {'Strain': medianZCubesStrain, 'Median Stress': medianZCubesStress}
+# zCubeDataframe = pd.DataFrame(data=zCubeMedian_dict)
+# zCubeDataframe.to_excel('MedianExcelFiles/3DP_Z_Cube_Median.xlsx')
+# # noinspection PyTypeChecker
+# plt.scatter(medianYCubesStrain, medianYCubesStress, s=2, c='red')
+# yCubeMedian_dict = {'Strain': medianYCubesStrain, 'Median Stress': medianYCubesStress}
+# yCubeDataframe = pd.DataFrame(data=yCubeMedian_dict)
+# yCubeDataframe.to_excel('MedianExcelFiles/3DP_Y_Cube_Median.xlsx')
+# # noinspection PyTypeChecker
+# plt.scatter(medianXCubesStrain, medianXCubesStress, s=2, c='green')
+# xCubeMedian_dict = {'Strain': medianXCubesStrain, 'Median Stress': medianXCubesStress}
+# xCubeDataframe = pd.DataFrame(data=xCubeMedian_dict)
+# xCubeDataframe.to_excel('MedianExcelFiles/3DP_X_Cube_Median.xlsx')
 
 ax = plt.subplot()
 
@@ -124,12 +130,12 @@ xCube = mpatches.Patch(color='green', label='X Cubes')
 ax.legend(handles=[xCube, YCube, ZCube])
 
 plt.xlabel('Microstrain (\u03BC\u03B5)')
-plt.ylabel('Stress (Pa)')
+plt.ylabel('Stress (MPa)')
 # getTitle = input("Enter title (code for \u00B2 is \\u00B2): ")
 getTitle = ''
 if getTitle != '':
     plt.title(getTitle)
 else:
-    plt.title('Stress vs Strain on median of each \n 3mm\u00B3 BMF Cubes (All Orientations)')
-plt.savefig('CombinedCubesMedian')
+    plt.title('Stress vs Strain of 30 \n 9mm\u00B3 3DP Formlabs Cubes (10 per orientation)')
+plt.savefig('AllFormlabsCubes')
 plt.show()
