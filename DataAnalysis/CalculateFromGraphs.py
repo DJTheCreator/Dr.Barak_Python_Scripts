@@ -43,5 +43,5 @@ def runSlopeCalculations():
     print("Y: " + str(yCubeSlope))
     print("X: " + str(xCubeSlope))
 
-
-print(np.trapz(y=createArrayFromDataframe(zCubes, 'Median Stress'), x=createArrayFromDataframe(zCubes, 'Strain')))
+runSlopeCalculations()
+#print(np.trapz(y=createArrayFromDataframe(zCubes, 'Median Stress'), x=createArrayFromDataframe(zCubes, 'Strain')))
