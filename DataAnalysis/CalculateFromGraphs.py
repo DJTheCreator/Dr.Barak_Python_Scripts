@@ -21,27 +21,38 @@ def findValueInDataframe(dataframe, collumnName, soughtValue):
             return i + 2
 
 
-zCubes = pd.read_excel('MedianExcelFiles/BMF_Cube_One_Median.xlsx')
+settingsDict = {'1': 'Cube_',
+                '2': 'Beam_',
+                '3': '3DP_',
+                '4': 'BMF_'}
+settings = [input("Compression(1) or Tension(2): "), input("3DP(3) or BMF(4): ")]
+filepath = "MedianExcelFiles/" + settingsDict[settings[1]] + settingsDict[settings[0]]
+if settings[1] == '4':
+    key = ['One', 'Two', 'Three']
+else:
+    key = ['Z', 'Y', 'X']
+
+zCubes = pd.read_excel(filepath + key[0] + '_Median.xlsx')
 yCubes = pd.read_excel('MedianExcelFiles/BMF_Cube_Two_Median.xlsx')
 xCubes = pd.read_excel('MedianExcelFiles/BMF_Cube_Three_Median.xlsx')
 
 
-def runSlopeCalculations():
+def runSlopeCalculations(low, high):
     zCubeSlope = calculateSlope(createArrayFromDataframe(zCubes, 'Strain'),
                                 createArrayFromDataframe(zCubes, 'Median Stress'),
-                                findValueInDataframe(zCubes, 'Strain', 40000),
-                                findValueInDataframe(zCubes, 'Strain', 55000))
+                                findValueInDataframe(zCubes, 'Strain', low),
+                                findValueInDataframe(zCubes, 'Strain', high))
     yCubeSlope = calculateSlope(createArrayFromDataframe(yCubes, 'Strain'),
                                 createArrayFromDataframe(yCubes, 'Median Stress'),
-                                findValueInDataframe(yCubes, 'Strain', 40000),
-                                findValueInDataframe(yCubes, 'Strain', 55000))
+                                findValueInDataframe(yCubes, 'Strain', low),
+                                findValueInDataframe(yCubes, 'Strain', high))
     xCubeSlope = calculateSlope(createArrayFromDataframe(xCubes, 'Strain'),
                                 createArrayFromDataframe(xCubes, 'Median Stress'),
-                                findValueInDataframe(xCubes, 'Strain', 40000),
-                                findValueInDataframe(xCubes, 'Strain', 55000))
-    print("Z: " + str(zCubeSlope))
-    print("Y: " + str(yCubeSlope))
-    print("X: " + str(xCubeSlope))
+                                findValueInDataframe(xCubes, 'Strain', low),
+                                findValueInDataframe(xCubes, 'Strain', high))
+    slopes = [zCubeSlope, yCubeSlope, xCubeSlope]
+    return slopes
 
-runSlopeCalculations()
-#print(np.trapz(y=createArrayFromDataframe(zCubes, 'Median Stress'), x=createArrayFromDataframe(zCubes, 'Strain')))
+
+slope_list = runSlopeCalculations(30000, 60000)
+print(slope_list)
