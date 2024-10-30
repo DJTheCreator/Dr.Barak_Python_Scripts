@@ -124,6 +124,8 @@ def createMedianArray(dataframeArray, columnName, medianStrainArray, scaleFactor
         for sheet in array:
             if i < len(sheet):
                 valueArray.append(sheet[i] * scaleFactor)
+            elif columnName == "Stress":
+                valueArray.append(0)
         newArray.append(median(valueArray))
     return newArray
 
@@ -198,13 +200,13 @@ elif settings[2] == 'Median':
                 + medianSettingsDict[settingsDict[settings[0]]])
 
     z_ci = 2.576 * std(medianZCubesStress) / math.sqrt(len(medianZCubesStress))
-    plt.fill_between(medianZCubesStrain, (medianZCubesStress - z_ci), (medianZCubesStress + z_ci), color='orange',
+    plt.fill_between(medianZCubesStrain, (medianZCubesStress - z_ci), (medianZCubesStress + z_ci), color='lightsteelblue',
                      alpha=0.4)
     y_ci = 2.576 * std(medianYCubesStress) / math.sqrt(len(medianYCubesStress))
-    plt.fill_between(medianYCubesStrain, (medianYCubesStress - y_ci), (medianYCubesStress + y_ci), color='blue',
+    plt.fill_between(medianYCubesStrain, (medianYCubesStress - y_ci), (medianYCubesStress + y_ci), color='lightcoral',
                      alpha=0.4)
     x_ci = 2.576 * std(medianXCubesStress) / math.sqrt(len(medianXCubesStress))
-    plt.fill_between(medianXCubesStrain, (medianXCubesStress - x_ci), (medianXCubesStress + x_ci), color='purple',
+    plt.fill_between(medianXCubesStrain, (medianXCubesStress - x_ci), (medianXCubesStress + x_ci), color='lightgreen',
                      alpha=0.4)
 
     # noinspection PyTypeChecker
@@ -238,7 +240,7 @@ if getTitle != '':
     plt.title(getTitle)
 else:
     plt.title('Stress vs Strain on median of each \n 9mm\u00B3 3DP Beams in Tension (All Orientations)')
-plt.savefig('3DPBeamsMedian')
+plt.savefig('3DPBeamsMedianV2')
 plt.show()
 
 input()
