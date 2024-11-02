@@ -145,6 +145,28 @@ def findMedianMaxStrain(dataframeArray, columnName):
     return closest_array
 
 
+ZFillColor = ''
+YFillColor = ''
+XFillColor = ''
+ZDotColor = ''
+YDotColor = ''
+XDotColor = ''
+if settings[0] == '1':
+    ZFillColor = 'royalblue'
+    YFillColor = 'firebrick'
+    XFillColor = 'limegreen'
+    ZDotColor = 'mediumblue'
+    YDotColor = 'darkred'
+    XDotColor = 'darkgreen'
+elif settings[0] == '2':
+    ZFillColor = 'powderblue'
+    YFillColor = 'lightcoral'
+    XFillColor = 'lightgreen'
+    ZDotColor = 'deepskyblue'
+    YDotColor = 'red'
+    XDotColor = 'lawngreen'
+
+
 if settings[2] == 'Combined':
     strainZ = createArrayFromDataframes(zCubeSheets, 'Strain')
     stressZ = createArrayFromDataframes(zCubeSheets, 'Stress')
@@ -169,11 +191,11 @@ if settings[2] == 'Combined':
     print("Consolidated Arrays")
 
     # noinspection PyTypeChecker
-    plt.scatter(consolidatedStrainZ, consolidatedStressZ, s=2, c='blue')
+    plt.scatter(consolidatedStrainZ, consolidatedStressZ, s=2, c=ZDotColor)
     # noinspection PyTypeChecker
-    plt.scatter(consolidatedStrainY, consolidatedStressY, s=2, c='red')
+    plt.scatter(consolidatedStrainY, consolidatedStressY, s=2, c=YDotColor)
     # noinspection PyTypeChecker
-    plt.scatter(consolidatedStrainX, consolidatedStressX, s=2, c='green')
+    plt.scatter(consolidatedStrainX, consolidatedStressX, s=2, c=XDotColor)
     print("Scattered Arrays")
 elif settings[2] == 'Median':
     medianZStrainArray = findMedianMaxStrain(zCubeSheets, 'Strain')
@@ -200,47 +222,68 @@ elif settings[2] == 'Median':
                 + medianSettingsDict[settingsDict[settings[0]]])
 
     z_ci = 2.576 * std(medianZCubesStress) / math.sqrt(len(medianZCubesStress))
-    plt.fill_between(medianZCubesStrain, (medianZCubesStress - z_ci), (medianZCubesStress + z_ci), color='lightsteelblue',
-                     alpha=0.4)
     y_ci = 2.576 * std(medianYCubesStress) / math.sqrt(len(medianYCubesStress))
-    plt.fill_between(medianYCubesStrain, (medianYCubesStress - y_ci), (medianYCubesStress + y_ci), color='lightcoral',
-                     alpha=0.4)
     x_ci = 2.576 * std(medianXCubesStress) / math.sqrt(len(medianXCubesStress))
-    plt.fill_between(medianXCubesStrain, (medianXCubesStress - x_ci), (medianXCubesStress + x_ci), color='lightgreen',
-                     alpha=0.4)
 
+    plt.fill_between(medianZCubesStrain, (medianZCubesStress - z_ci), (medianZCubesStress + z_ci),
+                     color=ZFillColor,
+                     alpha=0.4)
     # noinspection PyTypeChecker
-    plt.scatter(medianZCubesStrain, medianZCubesStress, s=.3, c='blue')
+    plt.scatter(medianZCubesStrain, medianZCubesStress, s=.3, c=ZDotColor)
+
+    plt.fill_between(medianYCubesStrain, (medianYCubesStress - y_ci), (medianYCubesStress + y_ci),
+                     color=YFillColor,
+                     alpha=0.4)
+    # noinspection PyTypeChecker
+    plt.scatter(medianYCubesStrain, medianYCubesStress, s=.3, c=YDotColor)
+
+    plt.fill_between(medianXCubesStrain, (medianXCubesStress - x_ci), (medianXCubesStress + x_ci),
+                     color=XFillColor,
+                     alpha=0.4)
+    # noinspection PyTypeChecker
+    plt.scatter(medianXCubesStrain, medianXCubesStress, s=.3, c=XDotColor)
+
     zCubeMedian_dict = {'Strain': medianZCubesStrain, 'Median Stress': medianZCubesStress}
     zCubeDataframe = pd.DataFrame(data=zCubeMedian_dict)
     zCubeDataframe.to_excel(savepath + key[0] + '_Median.xlsx')
-    # noinspection PyTypeChecker
-    plt.scatter(medianYCubesStrain, medianYCubesStress, s=.3, c='red')
+
     yCubeMedian_dict = {'Strain': medianYCubesStrain, 'Median Stress': medianYCubesStress}
     yCubeDataframe = pd.DataFrame(data=yCubeMedian_dict)
     yCubeDataframe.to_excel(savepath + key[1] + '_Median.xlsx')
-    # noinspection PyTypeChecker
-    plt.scatter(medianXCubesStrain, medianXCubesStress, s=.3, c='green')
+
     xCubeMedian_dict = {'Strain': medianXCubesStrain, 'Median Stress': medianXCubesStress}
     xCubeDataframe = pd.DataFrame(data=xCubeMedian_dict)
     xCubeDataframe.to_excel(savepath + key[2] + '_Median.xlsx')
 
 ax = plt.subplot()
 
-ZCube = mpatches.Patch(color='blue', label='Distal-Proximal')
+ZCube = mpatches.Patch(color='blue', label='Proximal-Distal')
 YCube = mpatches.Patch(color='red', label='Cranial-Caudal')
 xCube = mpatches.Patch(color='green', label='Medial-Lateral')
 ax.legend(handles=[xCube, YCube, ZCube])
 
 plt.xlabel('Microstrain (\u03BC\u03B5)')
 plt.ylabel('Stress (MPa)')
-# getTitle = input("Enter title (code for \u00B2 is \\u00B2): ")
-getTitle = ''
-if getTitle != '':
-    plt.title(getTitle)
-else:
-    plt.title('Stress vs Strain on median of each \n 9mm\u00B3 3DP Beams in Tension (All Orientations)')
-plt.savefig('3DPBeamsMedianV2')
+
+plotTitle = 'Stress vs Strain on '
+if settings[2].lower() == 'median':
+    plotTitle += 'median of '
+if input("all orientations? (y/n): ").lower == 'y':
+    plotTitle += 'each orientation of '
+if settings[1] == '3':
+    plotTitle += '\n 9mm\u00B3 Formlabs '
+elif settings[1] == '4':
+    plotTitle += '\n 3mm\u00B3 BMF '
+if settings[0] == '1':
+    plotTitle += 'Cube in Compression'
+elif settings[0] == '2':
+    plotTitle += 'Beam in Tension'
+
+plt.title('Stress vs Strain on median of each orientation of \n 9mm\u00B3 Formlabs Cube in Compression')
+plt.xlim(0, 400000)
+plt.ylim(0, 17.5)
 plt.show()
+savename = input("Save file with name: ")
+#plt.savefig('../Final Graphs/" + savename + ".png', transparent=True)
 
 input()
