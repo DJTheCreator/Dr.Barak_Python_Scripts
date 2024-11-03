@@ -53,6 +53,28 @@ def findUltimateStrength(dataframeArray, columnName):
     return median(maxValueList)
 
 
+def findValueInDataframe(test, soughtValue):
+    for i in range(len(test)):
+        if soughtValue == round(test[i] * 1000000, -2):
+            return i + 2
+
+
+def findYoungsModulus(dataframeArray, printer):
+    if printer == 'BMF':
+        low, high = 30000, 60000
+    else:
+        low, high = 20000, 45000
+    strainArray = createArrayFromDataframes(dataframeArray, 'Strain')
+    stressArray = createArrayFromDataframes(dataframeArray, 'Stress')
+    slopeList = []
+    for i in range(len(strainArray)):
+        x1_index = findValueInDataframe(strainArray[i], low)
+        x2_index = findValueInDataframe(strainArray[i], high)
+        slope = (stressArray[i][x2_index] - stressArray[i][x1_index]) / (strainArray[i][x2_index] - strainArray[i][x1_index])
+        slopeList.append(slope)
+    return median(slopeList)
+
+
 def calculateArea(x1, x2, stress):
     return 0.5 * abs(x2 - x1) * stress
 
@@ -97,6 +119,16 @@ def createMedianArray(dataframeArray, columnName, medianStrainArray, scaleFactor
                 valueArray.append(0)
         newArray.append(median(valueArray))
     return newArray
+
+
+def scaleStrainArray(strainArray, scaleFactor=1):
+    scaledArrayed = []
+    for test in strainArray:
+        scaledTest = []
+        for value in test:
+            scaledTest.append(value*scaleFactor)
+        scaledArrayed.append(scaledTest)
+    return scaledArrayed
 
 
 def findMedianMaxStrain(dataframeArray, columnName):
@@ -144,22 +176,24 @@ def generateGraph():
     if 'pd' in settings[3]:
         zCubeSheets = createArrayFromFiles(filepath, key[0])
         print("zCubeSheets generated...")
+        # print("median total energy proximal-distal: " + str(findMedianTotalArea(zCubeSheets)))
+        # print("Ultimate Z Strength (MPa): " + str(findUltimateStrength(zCubeSheets, 'Stress')))
+        print("Young's Modulus (MPa): " + str(findYoungsModulus(zCubeSheets, settingsDict[settings[1]][:-1])))
     if 'cc' in settings[3]:
         yCubeSheets = createArrayFromFiles(filepath, key[1])
         print("yCubeSheets generated...")
+        # print("median total energy cranial-caudal: " + str(findMedianTotalArea(yCubeSheets)))
+        # print("Ultimate Cranial-Caudal Strength (MPa): " + str(findUltimateStrength(yCubeSheets, 'Stress')))
+        print("Young's Modulus (MPa): " + str(findYoungsModulus(yCubeSheets, settingsDict[settings[1]][:-1])))
     if 'ml' in settings[3]:
         xCubeSheets = createArrayFromFiles(filepath, key[2])
         print("xCubeSheets generated...")
+        # print("median total energy medial-lateral: " + str(findMedianTotalArea(xCubeSheets)))
+        # print("Ultimate Medial-Lateral Strength (MPa): " + str(findUltimateStrength(xCubeSheets, 'Stress')))
+        print("Young's Modulus (MPa): " + str(findYoungsModulus(xCubeSheets, settingsDict[settings[1]][:-1])))
 
-    # print("median total energy \n proximal-distal: " + str(findMedianTotalArea(zCubeSheets)))
-    # print(" cranial-caudal: " + str(findMedianTotalArea(yCubeSheets)))
-    # print(" medial-lateral: " + str(findMedianTotalArea(xCubeSheets)))
-    #
-    # print("Ultimate Z Strength (MPa): " + str(findUltimateStrength(zCubeSheets, 'Stress')))
-    # print("Ultimate Y Strength (MPa): " + str(findUltimateStrength(yCubeSheets, 'Stress')))
-    # print("Ultimate X Strength (MPa): " + str(findUltimateStrength(xCubeSheets, 'Stress')))
-    # input("Stop here")
-    # print("Continuing...")
+    input("Press enter to continue")
+    print("Continuing...")
 
     ZFillColor = ''
     YFillColor = ''
@@ -184,7 +218,7 @@ def generateGraph():
 
     if settings[2] == 'Combined':
         if zCubeSheets:
-            strainZ = createArrayFromDataframes(zCubeSheets, 'Strain')
+            strainZ = scaleStrainArray(createArrayFromDataframes(zCubeSheets, 'Strain'), 1000000)
             stressZ = createArrayFromDataframes(zCubeSheets, 'Stress')
             print("zArrays generated")
             consolidatedStrainZ = consolidateArray(strainZ)
@@ -193,7 +227,7 @@ def generateGraph():
             plt.scatter(consolidatedStrainZ, consolidatedStressZ, s=2, c=ZDotColor)
 
         if yCubeSheets:
-            strainY = createArrayFromDataframes(yCubeSheets, 'Strain')
+            strainY = scaleStrainArray(createArrayFromDataframes(yCubeSheets, 'Strain'), 1000000)
             stressY = createArrayFromDataframes(yCubeSheets, 'Stress')
             print("yArrays generated")
             consolidatedStrainY = consolidateArray(strainY)
@@ -202,7 +236,7 @@ def generateGraph():
             plt.scatter(consolidatedStrainY, consolidatedStressY, s=2, c=YDotColor)
 
         if xCubeSheets:
-            strainX = createArrayFromDataframes(xCubeSheets, 'Strain')
+            strainX = scaleStrainArray(createArrayFromDataframes(xCubeSheets, 'Strain'), 1000000)
             stressX = createArrayFromDataframes(xCubeSheets, 'Stress')
             print("xArrays generated")
             consolidatedStrainX = consolidateArray(strainX)
@@ -297,7 +331,7 @@ def generateGraph():
         plotTitle += 'Cube in Compression'
     elif settings[0] == '2':
         plotTitle += 'Beam in Tension'
-    _plot_title = plotTitle
+    plt.title = plotTitle
 
 
 generating = True
