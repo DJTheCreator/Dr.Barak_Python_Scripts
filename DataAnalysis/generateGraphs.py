@@ -11,6 +11,7 @@ ax = plt.subplot()
 handles = []
 _plot_title = ''
 
+
 def createArrayFromDataframes(dataframeArray, columnName):
     bigTempArray = []
     for dataframe in dataframeArray:
@@ -67,12 +68,29 @@ def findYoungsModulus(dataframeArray, printer):
     strainArray = createArrayFromDataframes(dataframeArray, 'Strain')
     stressArray = createArrayFromDataframes(dataframeArray, 'Stress')
     slopeList = []
+    linear_pointsList = []
     for i in range(len(strainArray)):
         x1_index = findValueInDataframe(strainArray[i], low)
         x2_index = findValueInDataframe(strainArray[i], high)
-        slope = (stressArray[i][x2_index] - stressArray[i][x1_index]) / (strainArray[i][x2_index] - strainArray[i][x1_index])
+        slope = (stressArray[i][x2_index] - stressArray[i][x1_index]) / (
+                strainArray[i][x2_index] - strainArray[i][x1_index])
         slopeList.append(slope)
-    return median(slopeList)
+        y_intersept = stressArray[i][x1_index] - (slope * strainArray[i][x1_index])
+        j = x1_index
+        linear_points_x = []
+        linear_points_y = []
+        for j in range(len(strainArray[i])):
+            x = strainArray[i][j]
+            y = slope * x + y_intersept
+            linear_points_x.append((x + .002) * 1000000)
+            linear_points_y.append(y)
+            if j > x2_index * 1.4:
+                break
+        linear_pointsList.append([linear_points_x, linear_points_y])
+        # y = mx + b
+        # x = (y - b) / m
+        # b = y - mx
+    return [slopeList, linear_pointsList]
 
 
 def calculateArea(x1, x2, stress):
@@ -126,7 +144,7 @@ def scaleStrainArray(strainArray, scaleFactor=1):
     for test in strainArray:
         scaledTest = []
         for value in test:
-            scaledTest.append(value*scaleFactor)
+            scaledTest.append(value * scaleFactor)
         scaledArrayed.append(scaledTest)
     return scaledArrayed
 
@@ -173,26 +191,30 @@ def generateGraph():
     zCubeSheets = None
     yCubeSheets = None
     xCubeSheets = None
+    zYoungs, yYoungs, xYoungs = [0, 0, 0], [0, 0, 0], [0, 0, 0]
     if 'pd' in settings[3]:
         zCubeSheets = createArrayFromFiles(filepath, key[0])
         print("zCubeSheets generated...")
         # print("median total energy proximal-distal: " + str(findMedianTotalArea(zCubeSheets)))
         # print("Ultimate Z Strength (MPa): " + str(findUltimateStrength(zCubeSheets, 'Stress')))
-        print("Young's Modulus (MPa): " + str(findYoungsModulus(zCubeSheets, settingsDict[settings[1]][:-1])))
+        zYoungs = findYoungsModulus(zCubeSheets, settingsDict[settings[1]][:-1])
+        print("Young's Modulus (MPa): " + str(median(zYoungs[0])))
     if 'cc' in settings[3]:
         yCubeSheets = createArrayFromFiles(filepath, key[1])
         print("yCubeSheets generated...")
         # print("median total energy cranial-caudal: " + str(findMedianTotalArea(yCubeSheets)))
         # print("Ultimate Cranial-Caudal Strength (MPa): " + str(findUltimateStrength(yCubeSheets, 'Stress')))
-        print("Young's Modulus (MPa): " + str(findYoungsModulus(yCubeSheets, settingsDict[settings[1]][:-1])))
+        yYoungs = findYoungsModulus(yCubeSheets, settingsDict[settings[1]][:-1])
+        print("Young's Modulus (MPa): " + str(median(yYoungs[0])))
     if 'ml' in settings[3]:
         xCubeSheets = createArrayFromFiles(filepath, key[2])
         print("xCubeSheets generated...")
         # print("median total energy medial-lateral: " + str(findMedianTotalArea(xCubeSheets)))
         # print("Ultimate Medial-Lateral Strength (MPa): " + str(findUltimateStrength(xCubeSheets, 'Stress')))
-        print("Young's Modulus (MPa): " + str(findYoungsModulus(xCubeSheets, settingsDict[settings[1]][:-1])))
+        xYoungs = findYoungsModulus(xCubeSheets, settingsDict[settings[1]][:-1])
+        print("Young's Modulus (MPa): " + str(median(xYoungs[0])))
 
-    input("Press enter to continue")
+    # input("Press enter to continue")
     print("Continuing...")
 
     ZFillColor = ''
@@ -225,6 +247,8 @@ def generateGraph():
             consolidatedStressZ = consolidateArray(stressZ)
             # noinspection PyTypeChecker
             plt.scatter(consolidatedStrainZ, consolidatedStressZ, s=2, c=ZDotColor)
+            for plot in zYoungs[1]:
+                plt.scatter(plot[0], plot[1], s=14, c='mediumblue')
 
         if yCubeSheets:
             strainY = scaleStrainArray(createArrayFromDataframes(yCubeSheets, 'Strain'), 1000000)
@@ -234,6 +258,8 @@ def generateGraph():
             consolidatedStressY = consolidateArray(stressY)
             # noinspection PyTypeChecker
             plt.scatter(consolidatedStrainY, consolidatedStressY, s=2, c=YDotColor)
+            for plot in yYoungs[1]:
+                plt.scatter(plot[0], plot[1], s=14, c='darkred')
 
         if xCubeSheets:
             strainX = scaleStrainArray(createArrayFromDataframes(xCubeSheets, 'Strain'), 1000000)
@@ -243,6 +269,8 @@ def generateGraph():
             consolidatedStressX = consolidateArray(stressX)
             # noinspection PyTypeChecker
             plt.scatter(consolidatedStrainX, consolidatedStressX, s=2, c=XDotColor)
+            for plot in xYoungs[1]:
+                plt.scatter(plot[0], plot[1], s=14, c='darkgreen')
     elif settings[2] == 'Median':
         medianSettingsDict = {
             'ExcelFiles/Compression/': '_Cube_',
@@ -310,13 +338,19 @@ def generateGraph():
         print("not hatching label")
         hatch = ''
     if zCubeSheets:
-        ZCube = mpatches.Patch(color=ZDotColor, hatch=hatch, label=settingsDict[settings[1]][:-1] + ' Proximal-Distal ' + settingsDict[settings[0]][11:-1])
+        ZCube = mpatches.Patch(color=ZDotColor, hatch=hatch,
+                               label=settingsDict[settings[1]][:-1] + ' Proximal-Distal ' + settingsDict[settings[0]][
+                                                                                            11:-1])
         handles.append(ZCube)
     if yCubeSheets:
-        YCube = mpatches.Patch(color=YDotColor, hatch=hatch, label=settingsDict[settings[1]][:-1] + ' Cranial-Caudal ' + settingsDict[settings[0]][11:-1])
+        YCube = mpatches.Patch(color=YDotColor, hatch=hatch,
+                               label=settingsDict[settings[1]][:-1] + ' Cranial-Caudal ' + settingsDict[settings[0]][
+                                                                                           11:-1])
         handles.append(YCube)
     if xCubeSheets:
-        XCube = mpatches.Patch(color=XDotColor, hatch=hatch, label=settingsDict[settings[1]][:-1] + ' Medial-Lateral ' + settingsDict[settings[0]][11:-1])
+        XCube = mpatches.Patch(color=XDotColor, hatch=hatch,
+                               label=settingsDict[settings[1]][:-1] + ' Medial-Lateral ' + settingsDict[settings[0]][
+                                                                                           11:-1])
         handles.append(XCube)
     plotTitle = 'Stress vs Strain on '
     if settings[2].lower() == 'median':
@@ -356,8 +390,8 @@ else:
     plt.title = _plot_title
 plt.xlim(0, 400000)
 plt.ylim(0, 17.5)
-savename = input("Save file with name: ")
-plt.savefig('../Final Graphs/' + savename + '.png', transparent=True)
+# savename = input("Save file with name: ")
+# plt.savefig('../Final Graphs/' + savename + '.png', transparent=True)
 plt.show()
 
 input()
